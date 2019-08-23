@@ -6,7 +6,7 @@
 class FuncUtil : public Ref
 {
 public:
-	static std::string getLang(std::string name) {
+	static string getLang(const string& name) {
 		rapidjson::Document doc;
 	
 		string filePath = FileUtils::getInstance()->fullPathForFilename("lang/chinese.lang");
@@ -24,6 +24,25 @@ public:
 				return "NNF";
 			}
 		}
+	}
+
+	static string intToString(int number) {
+		stringstream ss;
+		ss << number;
+		string result = ss.str();
+		return result;
+	}
+
+	static int stringToInt(const string& str) {
+		return atoi(str.c_str());
+	}
+
+	static double stringToDouble(const string& str)
+	{
+		istringstream iss(str);
+		double num;
+		iss >> num;
+		return num;
 	}
 };
 #endif

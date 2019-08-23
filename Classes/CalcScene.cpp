@@ -1,5 +1,6 @@
 #include "CalcScene.h"
 
+
 Scene* CalcScene::createScene() {
 	auto scene = Scene::create();
 	auto layer = CalcScene::create();
@@ -18,6 +19,14 @@ bool CalcScene::init() {
 	m_calcButtonHeight = m_visibleSize.height / 7.5;
 
 	m_calcString = "";
+
+	//DbHelper::connect();
+	//log(to_string(DbHelper::getVersion()).c_str());
+	//DbHelper::setVersion(0);
+	//log(to_string(DbHelper::getVersion()).c_str());
+	//DbHelper::close();
+
+	CalcHistoryDB::add("aa");
 
 	initLabel();
 	initCalcButton();
@@ -158,7 +167,7 @@ void CalcScene::cacheLastCharacter() {
 	}
 }
 
-void CalcScene::processCalcString(string newStr) {
+void CalcScene::processCalcString(const string& newStr) {
 
 	//when last time equal mark is pressed, if newStr is not operator, begin from blank.
 	if (m_calcResult != "") {
@@ -345,9 +354,15 @@ void CalcScene::generateSuffixString() {
 		}
 		else if (calcString[i] >= '0' && calcString[i] <= '9' || calcString[i] == '.')
 		{
-			while (calcString[i] >= '0' && calcString[i] <= '9' || calcString[i] == '.')
+			while (calcString[i] >= '0' && calcString[i] <= '9' || calcString[i] == '.' || calcString[i] == 'e')
 			{
 				m_calcSuffixWector.push_back(calcString[i]);
+				if (calcString[i] == 'e') {
+					i++;
+					if (calcString[i] == '+') {
+						m_calcSuffixWector.push_back(calcString[i]);
+					}
+				}
 				i++;
 			}
 			m_calcSuffixWector.push_back(' ');
@@ -412,8 +427,14 @@ string CalcScene::calc() {
 		default:
 		{
 			figure = "";
-			while (*i >= '0'&& *i <= '9' || *i == '.') {
+			while (*i >= '0'&& *i <= '9' || *i == '.' || *i == 'e') {
 				figure += *i;
+				if (*i == 'e') {
+					i++;
+					if (*i == '+') {
+						figure += *i;
+					}
+				}
 				i++;
 			}
 			x = atof(figure.c_str());
