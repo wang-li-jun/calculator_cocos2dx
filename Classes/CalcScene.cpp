@@ -26,7 +26,7 @@ bool CalcScene::init() {
 	//log(to_string(DbHelper::getVersion()).c_str());
 	//DbHelper::close();
 
-	CalcHistoryDB::add("aa");
+	//CalcHistoryDB::add("aa");
 
 	initLabel();
 	initCalcButton();
@@ -57,33 +57,33 @@ void CalcScene::initLabel() {
 }
 
 void CalcScene::initCalcButton() {
-	string calcButtonConfig[20][4] = {
-		{ "0", CALC_BUTTON_BG, "0", "0" } ,
-		{ ".", CALC_BUTTON_BG, "1", "0" } ,
-		{ "+/-", CALC_BUTTON_BG, "2", "0" } ,
-		{ "=", CALC_BUTTON_BG, "3", "0" } ,
-		{ "1", CALC_BUTTON_BG, "0", "1" } ,
-		{ "2", CALC_BUTTON_BG, "1", "1" } ,
-		{ "3", CALC_BUTTON_BG, "2", "1" } ,
-		{ "+", CALC_BUTTON_BG, "3", "1" } ,
-		{ "4", CALC_BUTTON_BG, "0", "2" } ,
-		{ "5", CALC_BUTTON_BG, "1", "2" } ,
-		{ "6", CALC_BUTTON_BG, "2", "2" } ,
-		{ "-", CALC_BUTTON_BG, "3", "2" } ,
-		{ "7", CALC_BUTTON_BG, "0", "3" } ,
-		{ "8", CALC_BUTTON_BG, "1", "3" } ,
-		{ "9", CALC_BUTTON_BG, "2", "3" } ,
-		{ "*", CALC_BUTTON_BG, "3", "3" } ,
-		{ "C", CALC_BUTTON_BG, "0", "4" } ,
-		{ "()", CALC_BUTTON_BG, "1", "4" } ,
-		{ "<=", CALC_BUTTON_BG, "2", "4" } ,
-		{ "/", CALC_BUTTON_BG, "3", "4" } ,
+	string calcButtonConfig[20][5] = {
+		{ "0", CALC_BUTTON_BG, "0", "0", "1" } ,
+		{ ".", CALC_BUTTON_BG, "1", "0", "1" } ,
+		{ "H", CALC_BUTTON_BG, "2", "0", "1" } ,
+		{ "=", CALC_BUTTON_BG, "3", "0", "1" } ,
+		{ "1", CALC_BUTTON_BG, "0", "1", "1" } ,
+		{ "2", CALC_BUTTON_BG, "1", "1", "1" } ,
+		{ "3", CALC_BUTTON_BG, "2", "1", "1" } ,
+		{ "+", CALC_BUTTON_BG, "3", "1", "1" } ,
+		{ "4", CALC_BUTTON_BG, "0", "2", "1" } ,
+		{ "5", CALC_BUTTON_BG, "1", "2", "1" } ,
+		{ "6", CALC_BUTTON_BG, "2", "2", "1" } ,
+		{ "-", CALC_BUTTON_BG, "3", "2", "1" } ,
+		{ "7", CALC_BUTTON_BG, "0", "3", "1" } ,
+		{ "8", CALC_BUTTON_BG, "1", "3", "1" } ,
+		{ "9", CALC_BUTTON_BG, "2", "3", "1" } ,
+		{ FuncUtil::getLang("multiplyMark"), CALC_BUTTON_BG, "3", "3", "0.75" } ,
+		{ "C", CALC_BUTTON_BG, "0", "4", "1" } ,
+		{ "()", CALC_BUTTON_BG, "1", "4", "1" } ,
+		{ FuncUtil::getLang("leftArrowMark"), CALC_BUTTON_BG, "2", "4", "1" } ,
+		{ FuncUtil::getLang("divideMark"), CALC_BUTTON_BG, "3", "4", "0.75" } ,
 	};
 
 	for (auto &row : calcButtonConfig) {
 		//CocosToast::createToast(this, row[0], 1, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2));
 		auto calcButtonSprite = Scale9Sprite::create(row[1]);
-		auto calcButtonLabel = Label::createWithTTF(row[0], DEFAULT_FONT, m_calcButtonWidth / 2);
+		auto calcButtonLabel = Label::createWithTTF(row[0], DEFAULT_CHINESE_FONT, m_calcButtonWidth / 2 * FuncUtil::stringToDouble(row[4]));
 		calcButtonLabel->setColor(Color3B::BLACK);
 		auto calcButton = ControlButton::create(calcButtonLabel, calcButtonSprite);
 		calcButton->setPreferredSize(Size(m_calcButtonWidth, m_calcButtonHeight));
@@ -167,7 +167,9 @@ void CalcScene::cacheLastCharacter() {
 	}
 }
 
-void CalcScene::processCalcString(const string& newStr) {
+void CalcScene::processCalcString(string newStr) {
+	// 脳=>* 梅=>/
+	newStr = FuncUtil::markToOperator(newStr);
 
 	//when last time equal mark is pressed, if newStr is not operator, begin from blank.
 	if (m_calcResult != "") {
@@ -255,8 +257,9 @@ void CalcScene::processCalcString(const string& newStr) {
 			m_calcString.erase(m_calcString.end() - 1);
 		}
 	}
-	else if (!strcmp(newStr.c_str(), "+/-")) {
-		return;
+	else if (!strcmp(newStr.c_str(), "H")) {
+		auto calcHistoryScene = CalcHistoryScene::createScene();
+		Director::getInstance()->pushScene(CCTransitionMoveInR::create(0.3, calcHistoryScene));
 	}
 	else if (!strcmp(newStr.c_str(), "C")) {
 		m_calcString = "";
@@ -276,9 +279,9 @@ void CalcScene::processCalcString(const string& newStr) {
 		m_calcString += newStr;
 	}
 	if (m_calcResult == "") {
-		m_calcStringLabel->setString(m_calcString);
+		m_calcStringLabel->setString(FuncUtil::operatorToMark(m_calcString));
 	}else{
-		m_calcStringLabel->setString(m_calcString + "=" + m_calcResult);
+		m_calcStringLabel->setString(FuncUtil::operatorToMark(m_calcString) + "=" + m_calcResult);
 		m_calcString = m_calcResult;
 	}
 	if (m_calcString == "inf") {//when 0 is divided
@@ -322,7 +325,7 @@ void CalcScene::generateSuffixString() {
 	m_calcSuffixWector.clear();
 	stack<char> m_stack;
 
-	m_stack.push('#');// 特殊符号用来区分元素
+	m_stack.push('#');// 鐗规畩绗﹀彿鐢ㄦ潵鍖哄垎鍏冪礌
 	while (i < len)
 	{
 		if (calcString[i] == '(')

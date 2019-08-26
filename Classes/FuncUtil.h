@@ -26,6 +26,35 @@ public:
 		}
 	}
 
+	// ×=>* ÷=>/
+	static string markToOperator(const string& str) {
+		if (str == FuncUtil::getLang("divideMark")) {
+			return "/";
+		}else if (str == FuncUtil::getLang("multiplyMark")) {
+			return "*";
+		}else if (str == FuncUtil::getLang("leftArrowMark")) {
+			return "<=";
+		}else{
+			return str;
+		}
+	}
+
+	// *=>× /=>÷
+	static string operatorToMark(const string& str) {
+		string output;
+		for (size_t i = 0; i < str.size(); i++) {
+			if (str[i] == '*') {
+				output += FuncUtil::getLang("multiplyMark");
+			}else if (str[i] == '/') {
+				output += FuncUtil::getLang("divideMark");
+			}
+			else {
+				output += str[i];
+			}
+		}
+		return output;
+	}
+
 	static string intToString(int number) {
 		stringstream ss;
 		ss << number;
@@ -43,6 +72,18 @@ public:
 		double num;
 		iss >> num;
 		return num;
+	}
+
+	static long long getCurrentTimeStamp() {
+		time_t time1 = time(NULL);
+		return (long long)time1;
+	}
+
+	static string showTime(time_t time) {
+		char timebuf[128];
+		tm* lt = localtime(&time);
+		strftime(timebuf, 128, "%F %H:%M:%S", lt);
+		return timebuf;
 	}
 };
 #endif

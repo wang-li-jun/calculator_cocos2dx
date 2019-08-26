@@ -7,8 +7,8 @@
 #include "CocosToast.h"
 #include "ConstUtil.h"
 #include "FuncUtil.h"
-#include "DbHelper.h"
 #include "CalcHistoryDB.h"
+#include "CalcHistoryScene.h"
 
 USING_NS_CC;
 using namespace cocos2d::extension;
@@ -28,7 +28,7 @@ public:
 	void pressButton(float dt);//long press and schedule it to run
 
 	void cacheLastCharacter();//cache the last character of m_calcString to m_lastCharacter
-	void processCalcString(const string& newStr);//when clicking the calcButton, the new string will be added to calcString
+	void processCalcString(string newStr);//when clicking the calcButton, the new string will be added to calcString
 	int getOperatorPriority(char op);
 	void generateSuffixString();
 	string calc();//calculate the calcString and give the result

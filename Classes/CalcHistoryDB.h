@@ -2,7 +2,7 @@
 #define __CALC_HISTORY_DB_H__
 
 #include "DbHelper.h"
-
+#include "FuncUtil.h"
 
 class CalcHistoryDB {
 public:
