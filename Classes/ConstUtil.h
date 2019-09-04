@@ -6,8 +6,7 @@
 #define DEFAULT_CHINESE_FONT "fonts/simkai.ttf"
 
 //resource
-#define MAP_PLIST "maps/map.plist"
-#define DEFAULT_CONTAINER_ICO "res/default.png"
+#define GREY_DOT_ICO "res/grey_dot.png"
 #define CLOSE_BUTTON_ICO "res/close_button.png"
 #define BACK_BUTTON_ICO "res/back_button.png"
 #define ARROW_ICO "res/arrow.png"

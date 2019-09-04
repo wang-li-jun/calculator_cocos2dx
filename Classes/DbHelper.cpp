@@ -14,7 +14,7 @@ bool DbHelper::connect() {
 	if (isConnected()) {
 		return true;
 	}
-	std::string dbFile = CCFileUtils::sharedFileUtils()->getWritablePath()+ "default.db";
+	std::string dbFile = CCFileUtils::getInstance()->getWritablePath()+ "default.db";
 	int result = sqlite3_open(dbFile.c_str(), &m_db);
 	if (result == SQLITE_OK) {
 		log("Database open successful.");
@@ -102,34 +102,44 @@ int DbHelper::exec(const string& sql) {
 	return result;
 }
 
-int DbHelper::insert(const string& dbName, string(*para)[3], int paraLen) {
+int DbHelper::insert(const string& dbName, unordered_map<string, sqlData>& data) {
 	int result;
-	int i,j;
+	int stmtIndex;
 	sqlite3_stmt* stmt = NULL;
 
 	//sql should be INSERT INTO TABLE_NAME [(column1, column2, column3,...columnN)] VALUES(?, ?, ?, ...?); 
 	string sql = "INSERT INTO " + dbName + " (";
-	for (i = 0; i < paraLen; i++) {
-		if (i == 0) {
-			sql += para[i][0];
-		}else{
-			sql += "," + para[i][0];
+
+	unordered_map<string, sqlData>::iterator it;
+	it = data.begin();
+
+	while (it != data.end())
+	{
+		if (it == data.begin()) {
+			sql += it->first;
 		}
+		else {
+			sql += "," + it->first;
+		}
+		it++;
 	}
 	sql += ") VALUES(";
-	for (i = 0; i < paraLen; i++) {
-		if (i == 0) {
+	it = data.begin();
+	while (it != data.end())
+	{
+		if (it == data.begin()) {
 			sql += "?";
 		}
 		else {
 			sql += ",?";
 		}
+		it++;
 	}
 	sql += ")";
 	//log(sql.c_str());
 
 	if (!isConnected()) {
-		log("SQL error. cmd :%s / cause :%s", sql, "Database is not opened");
+		log("SQL error. cmd :%s / cause :%s", sql.c_str(), "Database is not opened");
 	}
 
 	if (sqlite3_prepare_v2(m_db, sql.c_str(), strlen(sql.c_str()), &stmt, NULL) != SQLITE_OK) {
@@ -140,34 +150,35 @@ int DbHelper::insert(const string& dbName, string(*para)[3], int paraLen) {
 		return 0;
 	}
 
-	for (i = 0; i < paraLen; i++) {
-		j = i + 1;
-		if (para[i][1] == "int") {
-			if (sqlite3_bind_int(stmt, j, FuncUtil::stringToInt(para[i][2])) != SQLITE_OK) {
-				log("SQL bind int error. cmd :%s column %s", sql.c_str(), para[i][0]);
+	it = data.begin();
+	stmtIndex = 1;
+	while (it != data.end())
+	{
+		if (it->second._sqlDataType == sqlDataType::LONG) {
+			if (sqlite3_bind_int64(stmt, stmtIndex, it->second._longData) != SQLITE_OK) {
+				log("SQL bind int64 error. cmd :%s column %s", sql.c_str(), it->first.c_str());
 				sqlite3_finalize(stmt);
 				return 0;
 			}
-		}
-		else if (para[i][1] == "text") {
-			if (sqlite3_bind_text(stmt, j, para[i][2].c_str(), strlen(para[i][2].c_str()), SQLITE_STATIC) != SQLITE_OK) {
-				log("SQL bind text error. cmd :%s column %s", sql.c_str(), para[i][0]);
+		}else if (it->second._sqlDataType == sqlDataType::DOUBLE) {
+			if (sqlite3_bind_double(stmt, stmtIndex, it->second._doubleData) != SQLITE_OK) {
+				log("SQL bind double error. cmd :%s column %s", sql.c_str(), it->first.c_str());
 				sqlite3_finalize(stmt);
 				return 0;
 			}
-		}
-		else if (para[i][1] == "double") {
-			if (sqlite3_bind_double(stmt, j, FuncUtil::stringToDouble(para[i][2])) != SQLITE_OK) {
-				log("SQL bind double error. cmd :%s column %s", sql.c_str(), para[i][0]);
+		}else if (it->second._sqlDataType == sqlDataType::TEXT) {
+			if (sqlite3_bind_text(stmt, stmtIndex, it->second._textData.c_str(), strlen(it->second._textData.c_str()), SQLITE_STATIC) != SQLITE_OK) {
+				log("SQL bind text error. cmd :%s column %s", sql.c_str(), it->first.c_str());
 				sqlite3_finalize(stmt);
 				return 0;
 			}
-		}
-		else {
-			log("SQL bind error. cmd :%s type %s for %s is wrong", sql.c_str(), para[i][1], para[i][0]);
+		}else {
+			log("SQL bind error. cmd :%s type for %s is wrong", sql.c_str(), it->first.c_str());
 			sqlite3_finalize(stmt);
 			return 0;
 		}
+		it++;
+		stmtIndex++;
 	}
 
 	if (sqlite3_step(stmt) != SQLITE_DONE) {
@@ -180,6 +191,77 @@ int DbHelper::insert(const string& dbName, string(*para)[3], int paraLen) {
 	return 1;
 }
 
+int DbHelper::read(const string& dbName, unordered_map<string, sqlData> fieldData, vector<unordered_map<string, sqlData>>& result, string sqlSuffix) {
+	sqlite3_stmt* stmt = NULL;
+
+	string sql = "SELECT ";
+	unordered_map<string, sqlData>::iterator it;
+	it = fieldData.begin();
+
+	while (it != fieldData.end())
+	{
+		if (it == fieldData.begin()) {
+			sql += it->first;
+		}
+		else {
+			sql += "," + it->first;
+		}
+		it++;
+	}
+	sql += " FROM " + dbName;
+	if (sqlSuffix != "") {
+		sql += " " + sqlSuffix;
+	}
+	
+	//log(sql.c_str());
+
+	if (!isConnected()) {
+		log("SQL error. cmd :%s / cause :%s", sql.c_str(), "Database is not opened");
+	}
+	if (sqlite3_prepare_v2(m_db, sql.c_str(), strlen(sql.c_str()), &stmt, NULL) != SQLITE_OK) {
+		if (stmt) {
+			sqlite3_finalize(stmt);
+		}
+		log("SQL preparation error. cmd :%s", sql.c_str());
+		return 0;
+	}
+	int colIndex;
+	while (sqlite3_step(stmt) == SQLITE_ROW)
+	{
+		colIndex = 0;
+		it = fieldData.begin();
+
+		while (it != fieldData.end())
+		{
+			if (it->second._sqlDataType == sqlDataType::LONG) {
+				it->second._longData = sqlite3_column_int64(stmt, colIndex);
+			}else if (it->second._sqlDataType == sqlDataType::TEXT) {
+				it->second._textData = FuncUtil::constCharStarToString(sqlite3_column_text(stmt, colIndex));
+			}else if (it->second._sqlDataType == sqlDataType::DOUBLE) {
+				it->second._doubleData = sqlite3_column_double(stmt, colIndex);
+			}
+			colIndex++;
+			it++;
+		}
+		result.push_back(fieldData);
+	}
+	log("SQL read successful. cmd :%s", sql.c_str());
+	sqlite3_finalize(stmt);
+	//log(to_string(result.size()).c_str());
+}
+
+string DbHelper::sqlDataPrint(const sqlData& data) {
+	if (data._sqlDataType == sqlDataType::TEXT) {
+		return data._textData;
+	}
+	else if (data._sqlDataType == sqlDataType::LONG) {
+		return FuncUtil::longToString(data._longData);
+	}
+	else if (data._sqlDataType == sqlDataType::DOUBLE) {
+		return FuncUtil::doubleToString(data._doubleData, 9);
+	}
+}
+
 void DbHelper::setVersion(int version) {
 	string sql = "PRAGMA user_version = " + FuncUtil::intToString(version);
 	exec(sql);
@@ -188,7 +270,7 @@ void DbHelper::setVersion(int version) {
 int DbHelper::getVersion() {
 	sqlite3_stmt * stmt;
 	int dbVersion;
-	char* cmd = "PRAGMA user_version;";
+	const char* cmd = "PRAGMA user_version;";
 
 	if (isConnected()) {
 		if (sqlite3_prepare_v2(m_db, cmd, strlen(cmd), &stmt, NULL) == SQLITE_OK) {

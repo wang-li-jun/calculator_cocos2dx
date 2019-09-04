@@ -58,9 +58,24 @@ public:
 	static string intToString(int number) {
 		stringstream ss;
 		ss << number;
-		string result = ss.str();
-		return result;
+		return ss.str();
 	}
+
+	static string longToString(long number) {
+		stringstream ss;
+		ss << number;
+		return ss.str();
+	}
+
+	static string doubleToString(double number, int precision) {
+		std::ostringstream os;
+		os.precision(precision);
+		//os.setf(std::ios::fixed);
+		os << number;
+		return os.str();
+	}
+
+	
 
 	static int stringToInt(const string& str) {
 		return atoi(str.c_str());
@@ -74,6 +89,11 @@ public:
 		return num;
 	}
 
+	static string constCharStarToString(const unsigned char * word) {
+		string result = (char *)word;
+		return result;
+	}
+
 	static long long getCurrentTimeStamp() {
 		time_t time1 = time(NULL);
 		return (long long)time1;
@@ -84,6 +104,11 @@ public:
 		tm* lt = localtime(&time);
 		strftime(timebuf, 128, "%F %H:%M:%S", lt);
 		return timebuf;
+	}
+
+	static void printMem() {
+		auto ss = Director::getInstance()->getTextureCache()->getCachedTextureInfo();
+		log("%s", ss.c_str());
 	}
 };
 #endif

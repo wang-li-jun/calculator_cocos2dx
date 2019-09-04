@@ -1,3 +1,6 @@
+/////////////////////////////////////////////////////////////
+增加退出过渡
+
 我们可以在CCDirector.h的void popScene();函数下面添加以下代码
 
 template <class T>
@@ -21,3 +24,26 @@ void popSceneWithTransition(float t)
 调用的时候这样写
 
 Director::getInstance()->popSceneWithTransition<TransitionSlideInT>(SCENE_TIME);
+
+
+
+/////////////////////////////////////////////////////////////////
+增加richText检测高度in UIRichText.cpp::formarRenderers()的else里面增加一行代码
+（3.17已经解决）
+for (size_t i=0; i<_elementRenders.size(); i++)
+        {
+            Vector<Node*>* row = (_elementRenders[i]);
+            float maxHeight = 0.0f;
+            for (ssize_t j=0; j<row->size(); j++)
+            {
+                Node* l = row->at(j);
+                maxHeight = MAX(l->getContentSize().height, maxHeight);
+            }
+            maxHeights[i] = maxHeight;
+            newContentSizeHeight += maxHeights[i];
+        }
+-------》_customSize.height = newContentSizeHeight;
+        
+        float nextPosY = _customSize.height;
+        for (size_t i=0; i<_elementRenders.size(); i++)
+        {

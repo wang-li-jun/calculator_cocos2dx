@@ -14,8 +14,12 @@ LOCAL_MODULE_FILENAME := libMyGame
 LOCAL_SRC_FILES := hellocpp/main.cpp \
                    ../../Classes/AppDelegate.cpp \
                    ../../Classes/HelloWorldScene.cpp \
-				   ../../Classes/CalcScene.cpp \
-				   ../../Classes/CalcHistoryScene.cpp
+				   ../../Classes/CalcScene.cpp\
+				   ../../Classes/CalcHistoryScene.cpp\
+				   ../../Classes/CalcHistoryDB.cpp\
+				   ../../Classes/CocosToast.cpp\
+				   ../../Classes/DBHelper.cpp\
+				   ../../Classes/sqlite3.c
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../Classes
 

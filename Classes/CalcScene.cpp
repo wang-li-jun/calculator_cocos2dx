@@ -27,7 +27,7 @@ bool CalcScene::init() {
 	//DbHelper::close();
 
 	//CalcHistoryDB::add("aa");
-
+	CalcHistoryDB::getFullData();
 	initLabel();
 	initCalcButton();
 	return true;
@@ -270,6 +270,7 @@ void CalcScene::processCalcString(string newStr) {
 		if (m_lastCharacter == LastCharacter::NUMBER || m_lastCharacter == LastCharacter::RIGHT_Parenthese) {
 			m_calcResult = calc();
 			m_calcResultLabel->setString(m_calcResult);
+			CalcHistoryDB::add(FuncUtil::operatorToMark(m_calcString) + "=" + m_calcResult);
 		}
 		else {
 			return;
@@ -445,11 +446,6 @@ string CalcScene::calc() {
 		}
 		m_stack.push(x);
 	}
-	//double to string
-	std::ostringstream os;
-	os.precision(9);
-	//os.setf(std::ios::fixed);
-	os << m_stack.top();
-	return os.str();
+	return FuncUtil::doubleToString(m_stack.top(), 9);
 }
 
