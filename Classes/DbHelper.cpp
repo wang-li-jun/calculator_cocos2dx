@@ -88,10 +88,10 @@ int DbHelper::exec(const string& sql) {
 	if (isConnected()) {
 		result = sqlite3_exec(m_db, sql.c_str(), NULL, NULL, &errMsg);
 		if (result != SQLITE_OK) {
-			result = 1;
+			result = 0;
 			log("SQL execution error. cmd :%s / code :%d / cause :%s", sql.c_str(), result, errMsg);
 		}else {
-			result = 0;
+			result = 1;
 			log("SQL execution success. cmd :%s", sql.c_str());
 		}
 		sqlite3_free(errMsg);
@@ -291,4 +291,8 @@ int DbHelper::getVersion() {
 	}
 
 	
+}
+
+int DbHelper::deleteAll(const string& dbName) {
+	return exec("DELETE FROM " + dbName);
 }

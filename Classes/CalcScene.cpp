@@ -83,13 +83,15 @@ void CalcScene::initCalcButton() {
 	for (auto &row : calcButtonConfig) {
 		//CocosToast::createToast(this, row[0], 1, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2));
 		auto calcButtonSprite = Scale9Sprite::create(row[1]);
-		auto calcButtonLabel = Label::createWithTTF(row[0], DEFAULT_CHINESE_FONT, m_calcButtonWidth / 2 * FuncUtil::stringToDouble(row[4]));
+		auto calcButtonLabel = Label::createWithTTF(row[0], DEFAULT_FONT, m_calcButtonWidth / 2.2 * FuncUtil::stringToDouble(row[4]));
 		calcButtonLabel->setColor(Color3B::BLACK);
+		//calcButtonLabel->enableBold();
 		auto calcButton = ControlButton::create(calcButtonLabel, calcButtonSprite);
 		calcButton->setPreferredSize(Size(m_calcButtonWidth, m_calcButtonHeight));
 		calcButton->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
 		calcButton->setPosition(Vec2(m_visibleOrigin.x + m_calcButtonWidth * std::atoi(row[2].c_str()),
 			m_visibleOrigin.y + m_calcButtonHeight * std::atoi(row[3].c_str())));
+		calcButtonLabel->setPosition(calcButton->getContentSize().width / 2.15, calcButton->getContentSize().height / 2.15);
 		calcButton->addTargetWithActionForControlEvents(this, cccontrol_selector(CalcScene::onCalcButtonTouchDownCallback), Control::EventType::TOUCH_DOWN);
 		calcButton->addTargetWithActionForControlEvents(this, cccontrol_selector(CalcScene::onCalcButtonTouchUpInsideCallback), Control::EventType::TOUCH_UP_INSIDE);
 		calcButton->addTargetWithActionForControlEvents(this, cccontrol_selector(CalcScene::onCalcButtonTouchUpOutsideCallback), Control::EventType::TOUCH_UP_OUTSIDE);

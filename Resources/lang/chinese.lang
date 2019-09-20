@@ -1,5 +1,17 @@
 {
+	"dialogRemark":"======dialogLayout======",
+    "alert":"提示",
+	"ok":"确认",
+	"cancel":"取消",
+	"menuRemark":"======menuLayout======",
+    "goBack":"回退",
+	"calcLayoutRemark":"======calcLayout======",
     "divideMark":"÷",
     "multiplyMark":"×",
-	"leftArrowMark":"←"
+	"leftArrowMark":"←",
+	"calcHistoryRemark":"======calcHistoryLayout======",
+	"deleteConfirm":"您确认要删除所有记录吗？",
+	"deleteAll":"删除全部",
+	"deleteComplete":"删除成功",
+	"deleteFailed":"删除失败"
 }

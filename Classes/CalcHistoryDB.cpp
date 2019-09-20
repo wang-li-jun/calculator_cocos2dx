@@ -45,3 +45,11 @@ vector<unordered_map<string, sqlData>> CalcHistoryDB::getFullData() {
 	return result;
 }
 
+int CalcHistoryDB::deleteAll() {
+	int result;
+	DbHelper::connect();
+	result = DbHelper::deleteAll(tbName);
+	DbHelper::close();
+	return result;
+}
+

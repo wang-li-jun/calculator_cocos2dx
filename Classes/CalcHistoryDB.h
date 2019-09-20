@@ -8,6 +8,7 @@ class CalcHistoryDB {
 public:
 	static int add(const string& calcStr);
 	static vector<unordered_map<string, sqlData>> getFullData();
+	static int deleteAll();
 private:
 	static string tbName;
 

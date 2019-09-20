@@ -64,6 +64,7 @@ public:
 	static int read(const string& dbName, unordered_map<string, sqlData> rowData, vector<unordered_map<string, sqlData>>& result, string sqlSuffix="");
 	static void exec(const string& sql, int(*callback)(void*, int, char**, char**), void* arg);
 	static string sqlDataPrint(const sqlData& data);
+	static int deleteAll(const string& dbName);
 	static void startTrans();
 	static void rollback();
 	static void commit();

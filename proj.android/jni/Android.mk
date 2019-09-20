@@ -18,6 +18,7 @@ LOCAL_SRC_FILES := hellocpp/main.cpp \
 				   ../../Classes/CalcHistoryScene.cpp\
 				   ../../Classes/CalcHistoryDB.cpp\
 				   ../../Classes/CocosToast.cpp\
+				   ../../Classes/CocosDialog.cpp\
 				   ../../Classes/DBHelper.cpp\
 				   ../../Classes/sqlite3.c
 

@@ -1,0 +1,27 @@
+https://www.cnblogs.com/skysand/p/4063584.html
+
+cocos compile -p android
+
+注意：
+
+①在打包apk之前需要修改proj.android/jni文件夹下的Android.mk文件 添加自己新增的CPP文件，这里的新增指的是非cocos2dx生成的项目文件（自己新增的文件）。一定要把自己新增的文件或文件夹包含进apk。
+
+②默认打包是横屏，若做的游戏是竖屏。则更改AndroidManifest.xml的参数：
+
+  android:screenOrientation="landscape"（横屏），android:screenOrientation="portrait"（竖屏）
+
+首先我们拿官方的 cpp-tests项目来试手吧！
+
+按住shift键+鼠标右键 选择在此处打开命令窗口。
+
+
+
+然后就可以使用 cocos compile -p android --ap 20方式编译APK文件了（--ap 20是指定android平台）
+
+
+
+漫长的等待吧，当然这里要提醒一点3.1版本用的是 android-20，如果E:\Android\sdk\platforms目录下没有android-20 请创建一个空的。
+
+
+
+等待完毕之后 看下这个文件夹下的 apk吧！可以安装到手机上试一下了。
