@@ -37,8 +37,8 @@ private:
 	Ref* m_callbackListener;
 	SEL_CallFuncN m_callback;
 	CC_SYNTHESIZE_RETAIN(Menu*, m__pMenu, MenuButton);
-	CC_SYNTHESIZE_RETAIN(Sprite*, m__sfBackGround, SpriteBackGround);
-	CC_SYNTHESIZE_RETAIN(Scale9Sprite*, m__s9BackGround, Sprite9BackGround);
+	CC_SYNTHESIZE_RETAIN(ui::Scale9Sprite*, m__s9BackGround, Sprite9BackGround);
+	CC_SYNTHESIZE_RETAIN(ui::Scale9Sprite*, m__s9BackGroundShadow, Sprite9BackGroundShadow);
 	CC_SYNTHESIZE_RETAIN(Label*, m__ltTitle, LabelTitle);
 	CC_SYNTHESIZE_RETAIN(Label*, m__ltContentText, LabelContentText);
 

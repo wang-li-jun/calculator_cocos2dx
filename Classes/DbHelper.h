@@ -62,9 +62,11 @@ public:
 	static int exec(const string& sql);
 	static int insert(const string& dbName, unordered_map<string, sqlData>& data);
 	static int read(const string& dbName, unordered_map<string, sqlData> rowData, vector<unordered_map<string, sqlData>>& result, string sqlSuffix="");
+	static int update(const string& dbName, unordered_map<string, sqlData> updateData, string sqlSuffix);
 	static void exec(const string& sql, int(*callback)(void*, int, char**, char**), void* arg);
 	static string sqlDataPrint(const sqlData& data);
 	static int deleteAll(const string& dbName);
+	static int deleteById(const string& dbName, long id);
 	static void startTrans();
 	static void rollback();
 	static void commit();

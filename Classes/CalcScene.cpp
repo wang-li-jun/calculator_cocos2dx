@@ -20,17 +20,25 @@ bool CalcScene::init() {
 
 	m_calcString = "";
 
-	//DbHelper::connect();
-	//log(to_string(DbHelper::getVersion()).c_str());
-	//DbHelper::setVersion(0);
-	//log(to_string(DbHelper::getVersion()).c_str());
-	//DbHelper::close();
-
-	//CalcHistoryDB::add("aa");
-	CalcHistoryDB::getFullData();
+	initUserDefault();
 	initLabel();
 	initCalcButton();
 	return true;
+}
+
+void CalcScene::onEnter()
+{
+	LayerColor::onEnter();
+	
+	updateLayoutForRecordEnableMark();
+
+}
+
+
+void CalcScene::initUserDefault() {
+	if (UserDefault::getInstance()->getStringForKey(RECORD_HISTORY_FLAG) == "") {
+		UserDefault::getInstance()->setBoolForKey(RECORD_HISTORY_FLAG, true);
+	}
 }
 
 void CalcScene::initLabel() {
@@ -58,9 +66,10 @@ void CalcScene::initLabel() {
 
 void CalcScene::initCalcButton() {
 	string calcButtonConfig[20][5] = {
+		//{what is shown in the layout, background image, column, row, scale ratio,}
 		{ "0", CALC_BUTTON_BG, "0", "0", "1" } ,
 		{ ".", CALC_BUTTON_BG, "1", "0", "1" } ,
-		{ "H", CALC_BUTTON_BG, "2", "0", "1" } ,
+		{ FuncUtil::getLang("record"), CALC_BUTTON_BG, "2", "0", "0.6" } ,
 		{ "=", CALC_BUTTON_BG, "3", "0", "1" } ,
 		{ "1", CALC_BUTTON_BG, "0", "1", "1" } ,
 		{ "2", CALC_BUTTON_BG, "1", "1", "1" } ,
@@ -93,17 +102,50 @@ void CalcScene::initCalcButton() {
 			m_visibleOrigin.y + m_calcButtonHeight * std::atoi(row[3].c_str())));
 		calcButtonLabel->setPosition(calcButton->getContentSize().width / 2.15, calcButton->getContentSize().height / 2.15);
 		calcButton->addTargetWithActionForControlEvents(this, cccontrol_selector(CalcScene::onCalcButtonTouchDownCallback), Control::EventType::TOUCH_DOWN);
-		calcButton->addTargetWithActionForControlEvents(this, cccontrol_selector(CalcScene::onCalcButtonTouchUpInsideCallback), Control::EventType::TOUCH_UP_INSIDE);
-		calcButton->addTargetWithActionForControlEvents(this, cccontrol_selector(CalcScene::onCalcButtonTouchUpOutsideCallback), Control::EventType::TOUCH_UP_OUTSIDE);
+		calcButton->setTag(atoi(row[2].c_str()) + atoi(row[3].c_str()) * 10);
+
+		if (row[2] == "2" && row[3] == "0") {
+			//for record button
+			calcButtonLabel->setPositionY(calcButtonLabel->getPositionY() + m_calcButtonWidth / 15);
+		}else {
+			calcButton->addTargetWithActionForControlEvents(this, cccontrol_selector(CalcScene::onCalcButtonTouchUpInsideCallback), Control::EventType::TOUCH_UP_INSIDE);
+			calcButton->addTargetWithActionForControlEvents(this, cccontrol_selector(CalcScene::onCalcButtonTouchUpOutsideCallback), Control::EventType::TOUCH_UP_OUTSIDE);
+		}
+
 		addChild(calcButton, 1);
 	}
+
+}
+
+void CalcScene::updateLayoutForRecordEnableMark() {
+	ControlButton* recordControlButton = (ControlButton*)getChildByTag(2);
+	Sprite* oldRecordEnableMark = (Sprite*)recordControlButton->getChildByName("recordEnableMark");
+	recordControlButton->removeChild(oldRecordEnableMark);
+
+	Sprite* newRecordEnableMark;
+	if (UserDefault::getInstance()->getBoolForKey(RECORD_HISTORY_FLAG) == true) {
+		newRecordEnableMark = Sprite::create(GREEN_DOT_ICO);
+	}else {
+		newRecordEnableMark = Sprite::create(RED_DOT_ICO);
+	}
+	newRecordEnableMark->setScale(m_calcButtonWidth / 3, m_calcButtonWidth / 10);
+	newRecordEnableMark->setAnchorPoint(Vec2::ANCHOR_MIDDLE_BOTTOM);
+	newRecordEnableMark->setPosition(m_calcButtonWidth / 2, m_calcButtonHeight / 6);
+	newRecordEnableMark->setName("recordEnableMark");
+	recordControlButton->addChild(newRecordEnableMark);
 }
 
 void CalcScene::onCalcButtonTouchDownCallback(Ref* pSender, Control::EventType event) {
 	auto calcButton = (ControlButton *)pSender;
+	switch (calcButton->getTag()) {
+		case 2://for record button
+			auto calcHistoryScene = CalcHistoryScene::createScene();
+			Director::getInstance()->pushScene(CCTransitionMoveInR::create(0.3f, calcHistoryScene));
+			return;
+	}
 	auto calcButtonLabel = (Label *)calcButton->getTitleLabel();
 	m_currentLongPressedString = calcButtonLabel->getString();
-	this->schedule(schedule_selector(CalcScene::pressButton), 0.15f, 999999, 0.8f);
+	this->schedule(schedule_selector(CalcScene::longPressButton), 0.15f, 999999, 0.8f);
 }
 
 void CalcScene::onCalcButtonTouchUpInsideCallback(Ref* pSender, Control::EventType event) {
@@ -112,18 +154,18 @@ void CalcScene::onCalcButtonTouchUpInsideCallback(Ref* pSender, Control::EventTy
 		auto calcButtonLabel = (Label *)calcButton->getTitleLabel();
 		processCalcString(calcButtonLabel->getString());
 	}
-	this->unschedule(schedule_selector(CalcScene::pressButton));
+	this->unschedule(schedule_selector(CalcScene::longPressButton));
 	m_isLongPressed = false;
 	m_currentLongPressedString = "";
 }
 
 void CalcScene::onCalcButtonTouchUpOutsideCallback(Ref* pSender, Control::EventType event) {
-	this->unschedule(schedule_selector(CalcScene::pressButton));
+	this->unschedule(schedule_selector(CalcScene::longPressButton));
 	m_isLongPressed = false;
 	m_currentLongPressedString = "";
 }
 
-void CalcScene::pressButton(float dt) {
+void CalcScene::longPressButton(float dt) {
 	m_isLongPressed = true;
 	processCalcString(m_currentLongPressedString);
 }
@@ -189,6 +231,10 @@ void CalcScene::processCalcString(string newStr) {
 	//cache the last charactor of calcString so that we can judge with newStr together
 	cacheLastCharacter();
 
+	//please see the definition in the h file
+	generateLastCalulcatedNumber();
+
+
 	//when the last character is unknown one, output INVALID INPUT value
 	if (m_lastCharacter == LastCharacter::INVALID) {
 		m_calcResultLabel->setString("INVALID INPUT");
@@ -200,85 +246,77 @@ void CalcScene::processCalcString(string newStr) {
 			if (m_lastCharacter == LastCharacter::NONE || m_lastCharacter == LastCharacter::OPERATOR) {
 				m_calcString += '(';
 				m_ParenthesesWay = ParenthesesWay::RIGHT;
-			}
-			else {
+			}else {
 				return;
 			}
-		}
-		else {
+		}else {
 			if (m_lastCharacter == LastCharacter::NUMBER) {
 				m_calcString += ')';
 				m_ParenthesesWay = ParenthesesWay::LEFT;
-			}
-			else {
+			}else {
 				return;
 			}
 		}
-	}
-	else if (!strcmp(newStr.c_str(), "+") || !strcmp(newStr.c_str(), "-") || !strcmp(newStr.c_str(), "*") || !strcmp(newStr.c_str(), "/")) {
+	}else if (!strcmp(newStr.c_str(), "+") || !strcmp(newStr.c_str(), "-") || !strcmp(newStr.c_str(), "*") || !strcmp(newStr.c_str(), "/")) {
 		if (m_lastCharacter == LastCharacter::LEFT_Parenthese || m_lastCharacter == LastCharacter::NONE) {
 			if (!strcmp(newStr.c_str(), "-")) {
 				m_calcString += newStr;
 			}
-		}
-		else if (m_lastCharacter == LastCharacter::NUMBER || m_lastCharacter == LastCharacter::RIGHT_Parenthese) {
+		}else if (m_lastCharacter == LastCharacter::NUMBER || m_lastCharacter == LastCharacter::RIGHT_Parenthese) {
 			m_calcString += newStr;
-		}
-		else if (m_lastCharacter == LastCharacter::OPERATOR) {
+		}else if (m_lastCharacter == LastCharacter::OPERATOR) {
 			m_calcString.erase(m_calcString.end() - 1);
 			m_calcString += newStr;
-		}
-		else {
+		}else {
 			return;
 		}
-	}
-	else if (!strcmp(newStr.c_str(), "0") || !strcmp(newStr.c_str(), "1") || !strcmp(newStr.c_str(), "2") || !strcmp(newStr.c_str(), "3") || !strcmp(newStr.c_str(), "4") || !strcmp(newStr.c_str(), "5") || !strcmp(newStr.c_str(), "6") || !strcmp(newStr.c_str(), "7") || !strcmp(newStr.c_str(), "8") || !strcmp(newStr.c_str(), "9")) {
+	}else if (!strcmp(newStr.c_str(), "0") || !strcmp(newStr.c_str(), "1") || !strcmp(newStr.c_str(), "2") || !strcmp(newStr.c_str(), "3") || !strcmp(newStr.c_str(), "4") || !strcmp(newStr.c_str(), "5") || !strcmp(newStr.c_str(), "6") || !strcmp(newStr.c_str(), "7") || !strcmp(newStr.c_str(), "8") || !strcmp(newStr.c_str(), "9")) {
 		if (m_lastCharacter == LastCharacter::RIGHT_Parenthese) {
 			return;
-		}
-		else {
+		}else if (!strcmp(newStr.c_str(), "0") && m_lastCalulcatedNumber == "0") {
+			return;
+		}else if (strcmp(newStr.c_str(), "0") && m_lastCalulcatedNumber == "0") {
+			m_calcString = m_calcString.substr(0, m_calcString.size() - 1);
+			m_calcString += newStr;
+		}else{
 			m_calcString += newStr;
 		}
-	}
-	else if (!strcmp(newStr.c_str(), ".")) {
+	}else if (!strcmp(newStr.c_str(), ".")) {
 		if (m_lastCharacter == LastCharacter::NUMBER) {
-			m_calcString += ".";
-		}
-		else {
+			string::size_type idx;
+			idx = m_lastCalulcatedNumber.find(".");
+			if (idx == string::npos) {
+				m_calcString += ".";
+			}else{
+				return;
+			}
+		}else {
 			return;
 		}
-	}
-	else if (!strcmp(newStr.c_str(), "<=")) {
+	}else if (!strcmp(newStr.c_str(), "<=")) {
 		if (m_calcString.length() != 0) {
 			if (m_lastCharacter == LastCharacter::LEFT_Parenthese) {
 				m_ParenthesesWay = ParenthesesWay::LEFT;
-			}
-			else if (m_lastCharacter == LastCharacter::RIGHT_Parenthese) {
+			}else if (m_lastCharacter == LastCharacter::RIGHT_Parenthese) {
 				m_ParenthesesWay = ParenthesesWay::RIGHT;
 			}
 			m_calcString.erase(m_calcString.end() - 1);
 		}
-	}
-	else if (!strcmp(newStr.c_str(), "H")) {
-		auto calcHistoryScene = CalcHistoryScene::createScene();
-		Director::getInstance()->pushScene(CCTransitionMoveInR::create(0.3, calcHistoryScene));
-	}
-	else if (!strcmp(newStr.c_str(), "C")) {
+	}else if (!strcmp(newStr.c_str(), "C")) {
 		m_calcString = "";
 		m_calcResultLabel->setString("");
 		m_ParenthesesWay = ParenthesesWay::LEFT;
-	}
-	else if (!strcmp(newStr.c_str(), "=")) {
+	}else if (!strcmp(newStr.c_str(), "=")) {
 		if (m_lastCharacter == LastCharacter::NUMBER || m_lastCharacter == LastCharacter::RIGHT_Parenthese) {
 			m_calcResult = calc();
 			m_calcResultLabel->setString(m_calcResult);
-			CalcHistoryDB::add(FuncUtil::operatorToMark(m_calcString) + "=" + m_calcResult);
-		}
-		else {
+			if (UserDefault::getInstance()->getBoolForKey(RECORD_HISTORY_FLAG)) {
+				CalcHistoryDB::add(FuncUtil::operatorToMark(m_calcString) + "=" + m_calcResult);
+			}
+		}else {
 			return;
 		}
-	}
-	else {
+	}else {
 		m_calcString += newStr;
 	}
 	if (m_calcResult == "") {
@@ -449,5 +487,32 @@ string CalcScene::calc() {
 		m_stack.push(x);
 	}
 	return FuncUtil::doubleToString(m_stack.top(), 9);
+}
+
+void CalcScene::generateLastCalulcatedNumber() {
+
+	int strSize = m_calcString.size();
+	//log(("org:"+m_calcString).c_str());
+	//log(("size:" + to_string(strSize)).c_str());
+	string thisChar;
+	for (int i = strSize - 1; i >= 0; i--) {
+		thisChar = m_calcString.substr(i,1);
+		//log(("i:" + to_string(i)).c_str());
+		//log(thisChar.c_str());
+		if (!strcmp(thisChar.c_str(), "0") || !strcmp(thisChar.c_str(), "1") || !strcmp(thisChar.c_str(), "2") || !strcmp(thisChar.c_str(), "3") || !strcmp(thisChar.c_str(), "4") || !strcmp(thisChar.c_str(), "5") || !strcmp(thisChar.c_str(), "6") || !strcmp(thisChar.c_str(), "7") || !strcmp(thisChar.c_str(), "8") || !strcmp(thisChar.c_str(), "9") || !strcmp(thisChar.c_str(), ".")) {
+			continue;
+		}else{
+			if (i == strSize - 1) {
+				m_lastCalulcatedNumber = "";
+				//log(("case1:" + m_lastCalulcatedNumber).c_str());
+			}else{
+				m_lastCalulcatedNumber = m_calcString.substr(i + 1, strSize - i - 1);
+				//log(("case2:" + m_lastCalulcatedNumber).c_str());
+			}
+			return;
+		}
+	}
+	m_lastCalulcatedNumber = m_calcString;
+	//log(("case3:" + m_lastCalulcatedNumber).c_str());
 }
 

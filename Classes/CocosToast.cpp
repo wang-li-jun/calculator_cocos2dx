@@ -5,7 +5,9 @@ SEL_CallFun CocosToast::m_pfnSelectior;
 
 void CocosToast::createToast(cocos2d::Node *node, const std::string &msg, const float &time,Vec2 point)
 {
-	auto label = Label::createWithSystemFont(msg.c_str(), "Arial", 20);
+	auto visibleSize = Director::getInstance()->getVisibleSize();
+
+	auto label = Label::createWithTTF(msg.c_str(), DEFAULT_CHINESE_FONT, visibleSize.width / 19);
     label->setColor(Color3B::WHITE);
     label->ignoreAnchorPointForPosition(false);
     label->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
@@ -32,8 +34,10 @@ void CocosToast::createToast(cocos2d::Node *node, const std::string &msg, const 
 
 void CocosToast::createToast(cocos2d::Node *node, const std::string &msg, const float &time,Vec2 point,SEL_CallFun method)
 {
+	auto visibleSize = Director::getInstance()->getVisibleSize();
+
 	m_pfnSelectior = method;
-	auto label = Label::createWithSystemFont(msg.c_str(), "Arial", 20);
+	auto label = Label::createWithTTF(msg.c_str(), DEFAULT_CHINESE_FONT, visibleSize.width / 19);
     label->setColor(Color3B::WHITE);
     label->ignoreAnchorPointForPosition(false);
     label->setAnchorPoint(Vec2::ANCHOR_MIDDLE);

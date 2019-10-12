@@ -25,6 +25,7 @@ vector<unordered_map<string, sqlData>> CalcHistoryDB::getFullData() {
 	fieldData["id"] = sqlData(sqlDataType::LONG);
 	fieldData["time"] = sqlData(sqlDataType::LONG);
 	fieldData["calc_str"] = sqlData(sqlDataType::TEXT);
+	fieldData["description"] = sqlData(sqlDataType::TEXT);
 	cmdResult = DbHelper::read(tbName, fieldData, result);
 	
 	DbHelper::close();
@@ -53,3 +54,44 @@ int CalcHistoryDB::deleteAll() {
 	return result;
 }
 
+int CalcHistoryDB::deleteById(long id) {
+	int result;
+	DbHelper::connect();
+	result = DbHelper::deleteById(tbName,id);
+	DbHelper::close();
+	return result;
+}
+
+unordered_map<string, sqlData> CalcHistoryDB::getItemById(long id) {
+	vector<unordered_map<string, sqlData>> result;
+	int cmdResult;
+
+	DbHelper::connect();
+
+	unordered_map<string, sqlData> fieldData;
+	fieldData["id"] = sqlData(sqlDataType::LONG);
+	fieldData["time"] = sqlData(sqlDataType::LONG);
+	fieldData["calc_str"] = sqlData(sqlDataType::TEXT);
+	fieldData["description"] = sqlData(sqlDataType::TEXT);
+	cmdResult = DbHelper::read(tbName, fieldData, result,"where id=" + FuncUtil::longToString(id));
+
+	DbHelper::close();
+
+	if (result.size() > 0) {
+		return result.at(0);
+	}else{
+		unordered_map<string, sqlData> blankData;
+		return blankData;
+	}
+}
+
+int CalcHistoryDB::updateDescriptionById(long id, string& description) {
+	int result;
+	DbHelper::connect();
+
+	unordered_map<string, sqlData> updateData;
+	updateData["description"] = sqlData(description);
+	result = DbHelper::update(tbName, updateData, "where id=" + FuncUtil::longToString(id));
+	DbHelper::close();
+	return result;
+}

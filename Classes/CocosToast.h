@@ -4,6 +4,7 @@
 #include "cocos2d.h"
 #include "extensions/cocos-ext.h"
 
+#include "ConstUtil.h"
 
 USING_NS_CC;
 using namespace std;

@@ -140,6 +140,7 @@ int DbHelper::insert(const string& dbName, unordered_map<string, sqlData>& data)
 
 	if (!isConnected()) {
 		log("SQL error. cmd :%s / cause :%s", sql.c_str(), "Database is not opened");
+		return 0;
 	}
 
 	if (sqlite3_prepare_v2(m_db, sql.c_str(), strlen(sql.c_str()), &stmt, NULL) != SQLITE_OK) {
@@ -217,6 +218,7 @@ int DbHelper::read(const string& dbName, unordered_map<string, sqlData> fieldDat
 
 	if (!isConnected()) {
 		log("SQL error. cmd :%s / cause :%s", sql.c_str(), "Database is not opened");
+		return 0;
 	}
 	if (sqlite3_prepare_v2(m_db, sql.c_str(), strlen(sql.c_str()), &stmt, NULL) != SQLITE_OK) {
 		if (stmt) {
@@ -248,6 +250,88 @@ int DbHelper::read(const string& dbName, unordered_map<string, sqlData> fieldDat
 	log("SQL read successful. cmd :%s", sql.c_str());
 	sqlite3_finalize(stmt);
 	//log(to_string(result.size()).c_str());
+}
+
+int DbHelper::update(const string& dbName, unordered_map<string, sqlData> updateData, string sqlSuffix) {
+	int stmtIndex;
+	sqlite3_stmt* stmt = NULL;
+
+	string sql = "UPDATE " + dbName + " SET ";
+	unordered_map<string, sqlData>::iterator it;
+	it = updateData.begin();
+
+	while (it != updateData.end())
+	{
+		if (it == updateData.begin()) {
+			sql += it->first + "=?";
+		}
+		else {
+			sql += "," + it->first + "=?";
+		}
+		it++;
+	}
+	if (sqlSuffix != "") {
+		sql += " " + sqlSuffix;
+	}else {
+		log("SQL error. cmd :%s / cause :%s", sql.c_str(), "Where clause is missing");
+		return 0;
+	}
+
+	//log(sql.c_str());
+
+	if (!isConnected()) {
+		log("SQL error. cmd :%s / cause :%s", sql.c_str(), "Database is not opened");
+		return 0;
+	}
+	if (sqlite3_prepare_v2(m_db, sql.c_str(), strlen(sql.c_str()), &stmt, NULL) != SQLITE_OK) {
+		if (stmt) {
+			sqlite3_finalize(stmt);
+		}
+		log("SQL preparation error. cmd :%s", sql.c_str());
+		return 0;
+	}
+	it = updateData.begin();
+	stmtIndex = 1;
+	while (it != updateData.end())
+	{
+		if (it->second._sqlDataType == sqlDataType::LONG) {
+			if (sqlite3_bind_int64(stmt, stmtIndex, it->second._longData) != SQLITE_OK) {
+				log("SQL bind int64 error. cmd :%s column %s", sql.c_str(), it->first.c_str());
+				sqlite3_finalize(stmt);
+				return 0;
+			}
+		}
+		else if (it->second._sqlDataType == sqlDataType::DOUBLE) {
+			if (sqlite3_bind_double(stmt, stmtIndex, it->second._doubleData) != SQLITE_OK) {
+				log("SQL bind double error. cmd :%s column %s", sql.c_str(), it->first.c_str());
+				sqlite3_finalize(stmt);
+				return 0;
+			}
+		}
+		else if (it->second._sqlDataType == sqlDataType::TEXT) {
+			if (sqlite3_bind_text(stmt, stmtIndex, it->second._textData.c_str(), strlen(it->second._textData.c_str()), SQLITE_STATIC) != SQLITE_OK) {
+				log("SQL bind text error. cmd :%s column %s", sql.c_str(), it->first.c_str());
+				sqlite3_finalize(stmt);
+				return 0;
+			}
+		}
+		else {
+			log("SQL bind error. cmd :%s type for %s is wrong", sql.c_str(), it->first.c_str());
+			sqlite3_finalize(stmt);
+			return 0;
+		}
+		it++;
+		stmtIndex++;
+	}
+
+	if (sqlite3_step(stmt) != SQLITE_DONE) {
+		log("SQL step error. cmd :%s", sql.c_str());
+		sqlite3_finalize(stmt);
+		return 0;
+	}
+	log("SQL update successful. cmd :%s", sql.c_str());
+	sqlite3_finalize(stmt);
+	return 1;
 }
 
 string DbHelper::sqlDataPrint(const sqlData& data) {
@@ -295,4 +379,8 @@ int DbHelper::getVersion() {
 
 int DbHelper::deleteAll(const string& dbName) {
 	return exec("DELETE FROM " + dbName);
+}
+
+int DbHelper::deleteById(const string& dbName, long id) {
+	return exec("DELETE FROM " + dbName + " WHERE id = " + FuncUtil::longToString(id));
 }

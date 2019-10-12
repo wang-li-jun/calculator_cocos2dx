@@ -16,6 +16,7 @@ LOCAL_SRC_FILES := hellocpp/main.cpp \
                    ../../Classes/HelloWorldScene.cpp \
 				   ../../Classes/CalcScene.cpp\
 				   ../../Classes/CalcHistoryScene.cpp\
+				   ../../Classes/CalcHistoryEditScene.cpp\
 				   ../../Classes/CalcHistoryDB.cpp\
 				   ../../Classes/CocosToast.cpp\
 				   ../../Classes/CocosDialog.cpp\
