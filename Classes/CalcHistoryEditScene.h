@@ -19,6 +19,7 @@ public:
 	virtual bool init();
 	virtual void onEnter();
 	CREATE_FUNC(CalcHistoryEditScene);
+	void addTopMenu();
 	void addBackButton();
 	void onBackButtonCallback(Ref* pSender, Control::EventType event);
 	void calcLineHeight();//to auto adjust the cell height
@@ -38,6 +39,8 @@ public:
 private:
 	Size m_visibleSize;
 	Vec2 m_visibleOrigin;
+
+	float m_topMenuHeight;
 
 	TableView* m_tableView;
 	ControlButton* m_backButton;

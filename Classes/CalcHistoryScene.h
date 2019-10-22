@@ -22,6 +22,7 @@ public:
 	virtual bool init();
 	virtual void onEnter();
 	CREATE_FUNC(CalcHistoryScene);
+	void addTopMenu();
 	void addBackButton();
 	void onBackButtonCallback(Ref* pSender, Control::EventType event);
 	void addToggleRecordFlagButton();
@@ -49,8 +50,7 @@ private:
 	Size m_visibleSize;
 	Vec2 m_visibleOrigin;
 
-	float m_calcButtonWidth;
-	float m_calcButtonHeight;
+	float m_topMenuHeight;
 	float m_tableCellDefaultHeight = 30.0;
 	float m_richTextHeight[50] = {0.0f};
 	float m_labelHeight[50] = {0.0f};

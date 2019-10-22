@@ -8,19 +8,15 @@ Scene* CalcHistoryEditScene::createScene() {
 }
 
 bool CalcHistoryEditScene::init() {
-	if (!LayerColor::initWithColor(Color4B(255, 255, 255, 255))) {
+	if (!LayerColor::initWithColor(Color4B(240, 240, 240, 255))) {
 		return false;
 	}
 	m_visibleSize = Director::getInstance()->getVisibleSize();
 	m_visibleOrigin = Director::getInstance()->getVisibleOrigin();
 
-	addBackButton();
+	m_topMenuHeight = m_visibleSize.width / 7;
 
-	Sprite* seperateLine = Sprite::create(GREY_DOT_ICO);
-	seperateLine->setScaleX(m_visibleSize.width);
-	seperateLine->setAnchorPoint(Point::ZERO);
-	seperateLine->setPosition(m_visibleOrigin.x, m_visibleOrigin.y + m_visibleSize.height - m_backButton->getContentSize().height - m_visibleSize.width / 15);
-	this->addChild(seperateLine);
+	addTopMenu();
 
 	return true;
 }
@@ -38,32 +34,47 @@ void CalcHistoryEditScene::onEnter()
 	//log(FuncUtil::longToString(m_queryData.size()).c_str());
 
 	if (!m_tableView) {
-		m_tableView = TableView::create(this, Size(m_visibleSize.width, m_visibleSize.height - m_backButton->getContentSize().height - m_visibleSize.width / 15));
+		m_tableView = TableView::create(this, Size(m_visibleSize.width, m_visibleSize.height - m_topMenuHeight));
 		m_tableView->setPosition(m_visibleOrigin.x, m_visibleOrigin.y);
 		this->addChild(m_tableView);
 		m_tableView->setVerticalFillOrder(TableView::VerticalFillOrder::TOP_DOWN);
+		m_tableView->setBounceable(false);
 		m_tableView->setDelegate(this);
 	}
 }
 
+void CalcHistoryEditScene::addTopMenu()
+{
+	addBackButton();
+
+	auto bgSprite = Scale9Sprite::create(BRIGHT_BLUE_BG);
+	bgSprite->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
+	bgSprite->setPosition(Vec2(m_visibleOrigin.x + m_backButton->getPreferredSize().width, m_visibleOrigin.y + m_visibleSize.height));
+	bgSprite->setPreferredSize(Size(m_visibleSize.width - m_backButton->getPreferredSize().width, m_topMenuHeight));
+	this->addChild(bgSprite);
+}
+
 void CalcHistoryEditScene::addBackButton()
 {
-	auto backButtonwSprite = Scale9Sprite::create(BUTTON_BG);
-	auto label = Label::createWithTTF(FuncUtil::getLang("goBack"), DEFAULT_CHINESE_FONT, m_visibleSize.width / 19);
+	auto backButtonwSprite = Scale9Sprite::create(BRIGHT_BLUE_BG);
+	auto label = Label::createWithTTF("<", DEFAULT_CHINESE_FONT, m_visibleSize.width / 16);
 	label->setColor(Color3B::BLACK);
 	m_backButton = ControlButton::create(label, backButtonwSprite);
-	m_backButton->setPreferredSize(Size(m_visibleSize.width / 5, m_visibleSize.width / 10));
+	m_backButton->setPreferredSize(Size(m_visibleSize.width / 9, m_topMenuHeight));
 	m_backButton->addTargetWithActionForControlEvents(this, cccontrol_selector(CalcHistoryEditScene::onBackButtonCallback), Control::EventType::TOUCH_DOWN);
 	m_backButton->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
-	m_backButton->setPosition(Vec2(m_visibleOrigin.x + m_visibleSize.width / 30,
-		m_visibleOrigin.y + m_visibleSize.height - m_visibleSize.width / 30));
-	label->setPosition(m_backButton->getContentSize().width / 2.15, m_backButton->getContentSize().height / 2.15);
+	m_backButton->setPosition(Vec2(m_visibleOrigin.x,m_visibleOrigin.y + m_visibleSize.height));
 
 	addChild(m_backButton, 2);
 }
 
 void CalcHistoryEditScene::onBackButtonCallback(Ref* pSender, Control::EventType event)
 {
+	m_backButton->stopAllActions();
+	FadeTo* fadeto1 = FadeTo::create(0.04f, 100);
+	FadeTo* fadeto2 = FadeTo::create(0.3f, 255);
+	Action * action = Sequence::create(fadeto1, fadeto2, NULL);
+	m_backButton->runAction(action);
 	Director::getInstance()->popSceneWithTransition<TransitionFadeTR>(0.6f);
 }
 
@@ -170,7 +181,7 @@ void CalcHistoryEditScene::tableCellTouched(TableView* table, TableViewCell* cel
 	stringstream stream;
 	stream << idx;
 	stream >> index;
-	CocosToast::createToast(this, index, 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2));
+	CocosToast::createToast(this, index, 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2), TOAST_SUCCESS_COLOR);
 }
 
 void CalcHistoryEditScene::scrollViewDidScroll(cocos2d::extension::ScrollView* view) { }
@@ -188,9 +199,9 @@ void CalcHistoryEditScene::editBoxReturn(ui::EditBox *editBox)
 {
 	string value = editBox->getText();
 	if (CalcHistoryDB::updateDescriptionById(getDbId(), value)) {
-		CocosToast::createToast(this, FuncUtil::getLang("updateComplete"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2));
+		CocosToast::createToast(this, FuncUtil::getLang("updateComplete"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2), TOAST_SUCCESS_COLOR);
 	}else{
-		CocosToast::createToast(this, FuncUtil::getLang("updateFailed"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2));
+		CocosToast::createToast(this, FuncUtil::getLang("updateFailed"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2), TOAST_FAIL_COLOR);
 	}
 }
 void CalcHistoryEditScene::editBoxTextChanged(ui::EditBox *editBox, const std::string &text)

@@ -15,8 +15,8 @@ public:
 
 	CocosToast(void);
 	~CocosToast(void);
-	static void createToast(cocos2d::Node *node, const std::string &msg, const float &time,Vec2 point);
-	static void createToast(Node* node,const std::string& msg,const float& time,Vec2 point,SEL_CallFun method);
+	static void createToast(Node* node, const std::string& msg,const float& time,Vec2 point,Color3B color);
+	static void createToast(Node* node, const std::string& msg,const float& time,Vec2 point,Color3B color,SEL_CallFun method);
 	void removeToast(Node* node);
     void removeToast2(Node* node);
     static SEL_CallFun m_pfnSelectior; 

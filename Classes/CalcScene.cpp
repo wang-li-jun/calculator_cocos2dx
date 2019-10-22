@@ -9,7 +9,7 @@ Scene* CalcScene::createScene() {
 }
 
 bool CalcScene::init() {
-	if (!LayerColor::initWithColor(Color4B(255, 255, 255, 255))) {
+	if (!LayerColor::initWithColor(Color4B(0, 0, 0, 255))) {
 		return false;
 	}
 	m_visibleSize = Director::getInstance()->getVisibleSize();
@@ -43,7 +43,7 @@ void CalcScene::initUserDefault() {
 
 void CalcScene::initLabel() {
 	m_calcStringLabel = Label::createWithTTF("", DEFAULT_FONT, m_calcButtonWidth / 3, Size(m_visibleSize.width * 0.9, m_calcButtonHeight / 3), TextHAlignment::RIGHT, TextVAlignment::BOTTOM);
-	m_calcStringLabel->setColor(Color3B(18, 65, 145));
+	m_calcStringLabel->setColor(Color3B(255, 255, 255));
 	m_calcStringLabel->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
 	//m_calcStringLabel->setPosition(m_visibleOrigin.x + m_visibleSize.width * 0.05, m_visibleOrigin.y + m_calcButtonHeight * 6);
 	//addChild(m_calcStringLabel, 1);
@@ -57,7 +57,7 @@ void CalcScene::initLabel() {
 	addChild(m_calcStringScrollView, 1);
 
 	m_calcResultLabel = Label::createWithTTF("", DEFAULT_FONT, m_calcButtonWidth / 2, Size(m_visibleSize.width * 0.9, m_calcButtonHeight), TextHAlignment::RIGHT,TextVAlignment::CENTER);
-	m_calcResultLabel->setColor(Color3B(18, 65, 145));
+	m_calcResultLabel->setColor(Color3B(255, 255, 255));
 	m_calcResultLabel->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
 	m_calcResultLabel->setPosition(m_visibleOrigin.x + m_visibleSize.width * 0.05, m_visibleOrigin.y + m_calcButtonHeight * 5);
 
@@ -67,51 +67,55 @@ void CalcScene::initLabel() {
 void CalcScene::initCalcButton() {
 	string calcButtonConfig[20][5] = {
 		//{what is shown in the layout, background image, column, row, scale ratio,}
-		{ "0", CALC_BUTTON_BG, "0", "0", "1" } ,
-		{ ".", CALC_BUTTON_BG, "1", "0", "1" } ,
-		{ FuncUtil::getLang("record"), CALC_BUTTON_BG, "2", "0", "0.6" } ,
-		{ "=", CALC_BUTTON_BG, "3", "0", "1" } ,
-		{ "1", CALC_BUTTON_BG, "0", "1", "1" } ,
-		{ "2", CALC_BUTTON_BG, "1", "1", "1" } ,
-		{ "3", CALC_BUTTON_BG, "2", "1", "1" } ,
-		{ "+", CALC_BUTTON_BG, "3", "1", "1" } ,
-		{ "4", CALC_BUTTON_BG, "0", "2", "1" } ,
-		{ "5", CALC_BUTTON_BG, "1", "2", "1" } ,
-		{ "6", CALC_BUTTON_BG, "2", "2", "1" } ,
-		{ "-", CALC_BUTTON_BG, "3", "2", "1" } ,
-		{ "7", CALC_BUTTON_BG, "0", "3", "1" } ,
-		{ "8", CALC_BUTTON_BG, "1", "3", "1" } ,
-		{ "9", CALC_BUTTON_BG, "2", "3", "1" } ,
-		{ FuncUtil::getLang("multiplyMark"), CALC_BUTTON_BG, "3", "3", "0.75" } ,
-		{ "C", CALC_BUTTON_BG, "0", "4", "1" } ,
-		{ "()", CALC_BUTTON_BG, "1", "4", "1" } ,
-		{ FuncUtil::getLang("leftArrowMark"), CALC_BUTTON_BG, "2", "4", "1" } ,
-		{ FuncUtil::getLang("divideMark"), CALC_BUTTON_BG, "3", "4", "0.75" } ,
+		{ "0", WHITE_BG_WS, "0", "0", "1" } ,
+		{ ".", WHITE_BG_WS, "1", "0", "1" } ,
+		{ FuncUtil::getLang("record"), WHITE_BG_WS, "2", "0", "0.6" } ,
+		{ "=", BRIGHT_GREEN_BG, "3", "0", "1" } ,
+		{ "1", WHITE_BG_WS, "0", "1", "1" } ,
+		{ "2", WHITE_BG_WS, "1", "1", "1" } ,
+		{ "3", WHITE_BG_WS, "2", "1", "1" } ,
+		{ "+", ORANGE_BG, "3", "1", "1" } ,
+		{ "4", WHITE_BG_WS, "0", "2", "1" } ,
+		{ "5", WHITE_BG_WS, "1", "2", "1" } ,
+		{ "6", WHITE_BG_WS, "2", "2", "1" } ,
+		{ "-", ORANGE_BG, "3", "2", "1" } ,
+		{ "7", WHITE_BG_WS, "0", "3", "1" } ,
+		{ "8", WHITE_BG_WS, "1", "3", "1" } ,
+		{ "9", WHITE_BG_WS, "2", "3", "1" } ,
+		{ FuncUtil::getLang("multiplyMark"), ORANGE_BG, "3", "3", "0.75" } ,
+		{ "C", GREY_BG, "0", "4", "1" } ,
+		{ "()", GREY_BG, "1", "4", "1" } ,
+		{ FuncUtil::getLang("leftArrowMark"), GREY_BG, "2", "4", "1" } ,
+		{ FuncUtil::getLang("divideMark"), ORANGE_BG, "3", "4", "0.75" } ,
 	};
 
 	for (auto &row : calcButtonConfig) {
 		//CocosToast::createToast(this, row[0], 1, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2));
 		auto calcButtonSprite = Scale9Sprite::create(row[1]);
 		auto calcButtonLabel = Label::createWithTTF(row[0], DEFAULT_FONT, m_calcButtonWidth / 2.2 * FuncUtil::stringToDouble(row[4]));
-		calcButtonLabel->setColor(Color3B::BLACK);
-		//calcButtonLabel->enableBold();
 		auto calcButton = ControlButton::create(calcButtonLabel, calcButtonSprite);
 		calcButton->setPreferredSize(Size(m_calcButtonWidth, m_calcButtonHeight));
 		calcButton->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
 		calcButton->setPosition(Vec2(m_visibleOrigin.x + m_calcButtonWidth * std::atoi(row[2].c_str()),
 			m_visibleOrigin.y + m_calcButtonHeight * std::atoi(row[3].c_str())));
-		calcButtonLabel->setPosition(calcButton->getContentSize().width / 2.15, calcButton->getContentSize().height / 2.15);
+		//calcButtonLabel->setPosition(calcButton->getContentSize().width / 2.15, calcButton->getContentSize().height / 2.15);
 		calcButton->addTargetWithActionForControlEvents(this, cccontrol_selector(CalcScene::onCalcButtonTouchDownCallback), Control::EventType::TOUCH_DOWN);
 		calcButton->setTag(atoi(row[2].c_str()) + atoi(row[3].c_str()) * 10);
-
-		if (row[2] == "2" && row[3] == "0") {
-			//for record button
-			calcButtonLabel->setPositionY(calcButtonLabel->getPositionY() + m_calcButtonWidth / 15);
-		}else {
+		if (row[2] == "3") {
+			calcButton->setTitleColorForState(Color3B::WHITE, Control::State::NORMAL);
+			calcButton->setTitleColorForState(Color3B::BLACK, Control::State::HIGH_LIGHTED);
+		}
+		else {
+			calcButton->setTitleColorForState(Color3B::BLACK, Control::State::NORMAL);
+			calcButton->setTitleColorForState(Color3B(100, 100, 100), Control::State::HIGH_LIGHTED);
+		}
+		
+		if (calcButton->getTag() == 2) {
+			calcButton->setTitleColorForState(Color3B::BLACK, Control::State::HIGH_LIGHTED);
+		}else{
 			calcButton->addTargetWithActionForControlEvents(this, cccontrol_selector(CalcScene::onCalcButtonTouchUpInsideCallback), Control::EventType::TOUCH_UP_INSIDE);
 			calcButton->addTargetWithActionForControlEvents(this, cccontrol_selector(CalcScene::onCalcButtonTouchUpOutsideCallback), Control::EventType::TOUCH_UP_OUTSIDE);
 		}
-
 		addChild(calcButton, 1);
 	}
 
@@ -137,29 +141,43 @@ void CalcScene::updateLayoutForRecordEnableMark() {
 
 void CalcScene::onCalcButtonTouchDownCallback(Ref* pSender, Control::EventType event) {
 	auto calcButton = (ControlButton *)pSender;
+	calcButton->stopAllActions();
 	switch (calcButton->getTag()) {
 		case 2://for record button
+			FadeTo* fadeto1 = FadeTo::create(0.04f, 230);
+			FadeTo* fadeto2 = FadeTo::create(0.3f, 255);
+			Action * action = Sequence::create(fadeto1, fadeto2, NULL);
+			calcButton->runAction(action);
 			auto calcHistoryScene = CalcHistoryScene::createScene();
 			Director::getInstance()->pushScene(CCTransitionMoveInR::create(0.3f, calcHistoryScene));
+			//Director::getInstance()->replaceScene(CCTransitionMoveInR::create(0.3f, calcHistoryScene));
+
 			return;
 	}
+	FadeTo* fadeto = FadeTo::create(0.04f, 230);
+	calcButton->runAction(fadeto);
 	auto calcButtonLabel = (Label *)calcButton->getTitleLabel();
 	m_currentLongPressedString = calcButtonLabel->getString();
 	this->schedule(schedule_selector(CalcScene::longPressButton), 0.15f, 999999, 0.8f);
 }
 
 void CalcScene::onCalcButtonTouchUpInsideCallback(Ref* pSender, Control::EventType event) {
+	auto calcButton = (ControlButton *)pSender;
 	if (m_isLongPressed == false) {
-		auto calcButton = (ControlButton *)pSender;
 		auto calcButtonLabel = (Label *)calcButton->getTitleLabel();
 		processCalcString(calcButtonLabel->getString());
 	}
+	FadeTo* fadeto = FadeTo::create(0.3f, 255);
+	calcButton->runAction(fadeto);
 	this->unschedule(schedule_selector(CalcScene::longPressButton));
 	m_isLongPressed = false;
 	m_currentLongPressedString = "";
 }
 
 void CalcScene::onCalcButtonTouchUpOutsideCallback(Ref* pSender, Control::EventType event) {
+	auto calcButton = (ControlButton *)pSender;
+	FadeTo* fadeto = FadeTo::create(0.3f, 255);
+	calcButton->runAction(fadeto);
 	this->unschedule(schedule_selector(CalcScene::longPressButton));
 	m_isLongPressed = false;
 	m_currentLongPressedString = "";
@@ -217,6 +235,9 @@ void CalcScene::processCalcString(string newStr) {
 
 	//when last time equal mark is pressed, if newStr is not operator, begin from blank.
 	if (m_calcResult != "") {
+		if (!strcmp(newStr.c_str(), "=")) {
+			return;
+		}
 		if (!strcmp(newStr.c_str(), "+") || !strcmp(newStr.c_str(), "-") || !strcmp(newStr.c_str(), "*") || !strcmp(newStr.c_str(), "/")) {
 			//preceed normally
 		}
@@ -232,7 +253,7 @@ void CalcScene::processCalcString(string newStr) {
 	cacheLastCharacter();
 
 	//please see the definition in the h file
-	generateLastCalulcatedNumber();
+	generateLastCalculatedNumber();
 
 
 	//when the last character is unknown one, output INVALID INPUT value
@@ -273,9 +294,9 @@ void CalcScene::processCalcString(string newStr) {
 	}else if (!strcmp(newStr.c_str(), "0") || !strcmp(newStr.c_str(), "1") || !strcmp(newStr.c_str(), "2") || !strcmp(newStr.c_str(), "3") || !strcmp(newStr.c_str(), "4") || !strcmp(newStr.c_str(), "5") || !strcmp(newStr.c_str(), "6") || !strcmp(newStr.c_str(), "7") || !strcmp(newStr.c_str(), "8") || !strcmp(newStr.c_str(), "9")) {
 		if (m_lastCharacter == LastCharacter::RIGHT_Parenthese) {
 			return;
-		}else if (!strcmp(newStr.c_str(), "0") && m_lastCalulcatedNumber == "0") {
+		}else if (!strcmp(newStr.c_str(), "0") && m_lastCalculatedNumber == "0") {
 			return;
-		}else if (strcmp(newStr.c_str(), "0") && m_lastCalulcatedNumber == "0") {
+		}else if (strcmp(newStr.c_str(), "0") && m_lastCalculatedNumber == "0") {
 			m_calcString = m_calcString.substr(0, m_calcString.size() - 1);
 			m_calcString += newStr;
 		}else{
@@ -284,7 +305,7 @@ void CalcScene::processCalcString(string newStr) {
 	}else if (!strcmp(newStr.c_str(), ".")) {
 		if (m_lastCharacter == LastCharacter::NUMBER) {
 			string::size_type idx;
-			idx = m_lastCalulcatedNumber.find(".");
+			idx = m_lastCalculatedNumber.find(".");
 			if (idx == string::npos) {
 				m_calcString += ".";
 			}else{
@@ -307,7 +328,7 @@ void CalcScene::processCalcString(string newStr) {
 		m_calcResultLabel->setString("");
 		m_ParenthesesWay = ParenthesesWay::LEFT;
 	}else if (!strcmp(newStr.c_str(), "=")) {
-		if (m_lastCharacter == LastCharacter::NUMBER || m_lastCharacter == LastCharacter::RIGHT_Parenthese) {
+		if ((m_lastCharacter == LastCharacter::NUMBER || m_lastCharacter == LastCharacter::RIGHT_Parenthese) && (m_calcString.find("+") != string::npos || m_calcString.find("-") != string::npos || m_calcString.find("*") != string::npos || m_calcString.find("/") != string::npos )) {
 			m_calcResult = calc();
 			m_calcResultLabel->setString(m_calcResult);
 			if (UserDefault::getInstance()->getBoolForKey(RECORD_HISTORY_FLAG)) {
@@ -489,7 +510,7 @@ string CalcScene::calc() {
 	return FuncUtil::doubleToString(m_stack.top(), 9);
 }
 
-void CalcScene::generateLastCalulcatedNumber() {
+void CalcScene::generateLastCalculatedNumber() {
 
 	int strSize = m_calcString.size();
 	//log(("org:"+m_calcString).c_str());
@@ -503,16 +524,16 @@ void CalcScene::generateLastCalulcatedNumber() {
 			continue;
 		}else{
 			if (i == strSize - 1) {
-				m_lastCalulcatedNumber = "";
+				m_lastCalculatedNumber = "";
 				//log(("case1:" + m_lastCalulcatedNumber).c_str());
 			}else{
-				m_lastCalulcatedNumber = m_calcString.substr(i + 1, strSize - i - 1);
+				m_lastCalculatedNumber = m_calcString.substr(i + 1, strSize - i - 1);
 				//log(("case2:" + m_lastCalulcatedNumber).c_str());
 			}
 			return;
 		}
 	}
-	m_lastCalulcatedNumber = m_calcString;
+	m_lastCalculatedNumber = m_calcString;
 	//log(("case3:" + m_lastCalulcatedNumber).c_str());
 }
 

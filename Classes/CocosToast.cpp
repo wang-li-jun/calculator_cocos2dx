@@ -3,7 +3,7 @@
 
 SEL_CallFun CocosToast::m_pfnSelectior; 
 
-void CocosToast::createToast(cocos2d::Node *node, const std::string &msg, const float &time,Vec2 point)
+void CocosToast::createToast(cocos2d::Node *node, const std::string &msg, const float &time,Vec2 point, Color3B color)
 {
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 
@@ -12,10 +12,11 @@ void CocosToast::createToast(cocos2d::Node *node, const std::string &msg, const 
     label->ignoreAnchorPointForPosition(false);
     label->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
     
-    auto layer = LayerColor::create(Color4B(100,100,100,255));
+    auto layer = LayerColor::create();
+	layer->setColor(color);
     layer->ignoreAnchorPointForPosition(false);
     layer->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
-    layer->setContentSize(label->getContentSize() + Size(20,15));
+    layer->setContentSize(label->getContentSize() + Size(60,50));
 
     node->addChild(layer,999);
     node->addChild(label,999);
@@ -32,7 +33,7 @@ void CocosToast::createToast(cocos2d::Node *node, const std::string &msg, const 
 	label->runAction(action->clone());
 }
 
-void CocosToast::createToast(cocos2d::Node *node, const std::string &msg, const float &time,Vec2 point,SEL_CallFun method)
+void CocosToast::createToast(cocos2d::Node *node, const std::string &msg, const float &time,Vec2 point, Color3B color,SEL_CallFun method)
 {
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 
@@ -42,10 +43,11 @@ void CocosToast::createToast(cocos2d::Node *node, const std::string &msg, const 
     label->ignoreAnchorPointForPosition(false);
     label->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
     
-    auto layer = LayerColor::create(Color4B(100,100,100,255));
+    auto layer = LayerColor::create();
+	layer->setColor(color);
     layer->ignoreAnchorPointForPosition(false);
     layer->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
-    layer->setContentSize(label->getContentSize() + Size(20,15));
+    layer->setContentSize(label->getContentSize() + Size(60,50));
 
     node->addChild(layer);
     node->addChild(label);

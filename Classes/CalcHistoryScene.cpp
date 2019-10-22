@@ -8,16 +8,15 @@ Scene* CalcHistoryScene::createScene() {
 }
 
 bool CalcHistoryScene::init() {
-	if (!LayerColor::initWithColor(Color4B(255, 255, 255, 255))) {
+	if (!LayerColor::initWithColor(Color4B(240, 240, 240, 255))) {
 		return false;
 	}
 	m_visibleSize = Director::getInstance()->getVisibleSize();
 	m_visibleOrigin = Director::getInstance()->getVisibleOrigin();
 
-	
-	addBackButton();
-	addDeleteAllButton();
-	addToggleRecordFlagButton();
+	m_topMenuHeight = m_visibleSize.width / 7;
+
+	addTopMenu();
 
 	//m_historyData = CalcHistoryDB::getFullData();
 	//calcLineHeight();
@@ -30,7 +29,7 @@ bool CalcHistoryScene::init() {
 	}
 	*/
 
-	m_tableView = TableView::create(this, Size(m_visibleSize.width, m_visibleSize.height - m_backButton->getContentSize().height - m_visibleSize.width / 15));
+	m_tableView = TableView::create(this, Size(m_visibleSize.width, m_visibleSize.height - m_topMenuHeight));
 	m_tableView->setPosition(m_visibleOrigin.x, m_visibleOrigin.y);
 	this->addChild(m_tableView);
 	//tableView->setVerticalFillOrder(TableView::VerticalFillOrder::TOP_DOWN);
@@ -38,19 +37,12 @@ bool CalcHistoryScene::init() {
 	m_tableView->setDelegate(this);
 	//tableView->reloadData();
 
-	Sprite* seperateLine = Sprite::create(GREY_DOT_ICO);
-	seperateLine->setScaleX(m_visibleSize.width);
-	seperateLine->setAnchorPoint(Point::ZERO);
-	seperateLine->setPosition(m_visibleOrigin.x, m_visibleOrigin.y + m_visibleSize.height - m_backButton->getContentSize().height - m_visibleSize.width / 15);
-	this->addChild(seperateLine);
-
 	return true;
 }
 
 void CalcHistoryScene::onEnter()
 {
 	LayerColor::onEnter();
-
 	m_historyData = CalcHistoryDB::getFullData();
 	calcLineHeight();
 
@@ -63,34 +55,47 @@ void CalcHistoryScene::onEnter()
 	}
 }
 
+void CalcHistoryScene::addTopMenu()
+{
+	addBackButton();
+	addDeleteAllButton();
+	addToggleRecordFlagButton();
+
+	auto bgSprite = Scale9Sprite::create(BRIGHT_BLUE_BG);
+	bgSprite->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
+	bgSprite->setPosition(Vec2(m_visibleOrigin.x + m_backButton->getPreferredSize().width, m_visibleOrigin.y + m_visibleSize.height));
+	bgSprite->setPreferredSize(Size(m_toggleRecordFlagButton->getPosition().x - m_toggleRecordFlagButton->getPreferredSize().width - m_backButton->getPreferredSize().width, m_topMenuHeight));
+	this->addChild(bgSprite);
+}
+
 void CalcHistoryScene::addBackButton()
 {
-	auto backButtonwSprite = Scale9Sprite::create(BUTTON_BG);
-	auto label = Label::createWithTTF(FuncUtil::getLang("goBack"), DEFAULT_CHINESE_FONT, m_visibleSize.width / 19);
+	auto backButtonwSprite = Scale9Sprite::create(BRIGHT_BLUE_BG);
+	auto label = Label::createWithTTF("<", DEFAULT_CHINESE_FONT, m_visibleSize.width / 16);
 	label->setColor(Color3B::BLACK);
 	m_backButton = ControlButton::create(label,backButtonwSprite);
-	m_backButton->setPreferredSize(Size(m_visibleSize.width / 5, m_visibleSize.width / 10));
+	m_backButton->setPreferredSize(Size(m_visibleSize.width / 9, m_topMenuHeight));
 	m_backButton->addTargetWithActionForControlEvents(this, cccontrol_selector(CalcHistoryScene::onBackButtonCallback), Control::EventType::TOUCH_DOWN);
 	m_backButton->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
-	m_backButton->setPosition(Vec2(m_visibleOrigin.x + m_visibleSize.width / 30,
-		m_visibleOrigin.y + m_visibleSize.height - m_visibleSize.width / 30));
-	label->setPosition(m_backButton->getContentSize().width / 2.15, m_backButton->getContentSize().height / 2.15);
-
+	m_backButton->setPosition(Vec2(m_visibleOrigin.x,m_visibleOrigin.y + m_visibleSize.height));
+	//label->setPosition(m_backButton->getContentSize().width / 2.15, m_backButton->getContentSize().height / 2.15);
+	
 	addChild(m_backButton, 2);
 }
 
 void CalcHistoryScene::addDeleteAllButton()
 {
-	auto buttonwSprite = Scale9Sprite::create(BUTTON_BG);
+	auto buttonwSprite = Scale9Sprite::create(BRIGHT_BLUE_BG);
 	auto label = Label::createWithTTF(FuncUtil::getLang("deleteAll"), DEFAULT_CHINESE_FONT, m_visibleSize.width / 19);
+	//Label* label = Label::createWithSystemFont(FuncUtil::getLang("deleteAll"), "Arial", m_visibleSize.width / 19);
 	label->setColor(Color3B::BLACK);
 	m_deleteAllButton = ControlButton::create(label, buttonwSprite);
-	m_deleteAllButton->setPreferredSize(Size(m_visibleSize.width / 3.7, m_visibleSize.width / 10));
+	m_deleteAllButton->setPreferredSize(Size(m_visibleSize.width / 3.7, m_topMenuHeight));
 	m_deleteAllButton->addTargetWithActionForControlEvents(this, cccontrol_selector(CalcHistoryScene::onDeleteAllButtonCallback), Control::EventType::TOUCH_DOWN);
 	m_deleteAllButton->setAnchorPoint(Vec2::ANCHOR_TOP_RIGHT);
-	m_deleteAllButton->setPosition(Vec2(m_visibleOrigin.x + m_visibleSize.width - m_visibleSize.width / 30,
-		m_visibleOrigin.y + m_visibleSize.height - m_visibleSize.width / 30));
-	label->setPosition(m_backButton->getContentSize().width / 1.58, m_backButton->getContentSize().height / 2.2);
+	m_deleteAllButton->setPosition(Vec2(m_visibleOrigin.x + m_visibleSize.width,
+		m_visibleOrigin.y + m_visibleSize.height));
+	//label->setPosition(m_backButton->getContentSize().width / 1.58, m_backButton->getContentSize().height / 2.2);
 
 	addChild(m_deleteAllButton, 2);
 }
@@ -98,7 +103,7 @@ void CalcHistoryScene::addDeleteAllButton()
 void CalcHistoryScene::addToggleRecordFlagButton()
 {
 	Label* label;
-	auto toggleRecordFlagButtonwSprite = Scale9Sprite::create(BUTTON_BG);
+	auto toggleRecordFlagButtonwSprite = Scale9Sprite::create(BRIGHT_BLUE_BG);
 	if (UserDefault::getInstance()->getBoolForKey(RECORD_HISTORY_FLAG) == true) {
 		label = Label::createWithTTF(FuncUtil::getLang("closeRecordFlag"), DEFAULT_CHINESE_FONT, m_visibleSize.width / 19);
 	}
@@ -107,14 +112,29 @@ void CalcHistoryScene::addToggleRecordFlagButton()
 	}
 	label->setColor(Color3B::BLACK);
 	m_toggleRecordFlagButton = ControlButton::create(toggleRecordFlagButtonwSprite);
-	m_toggleRecordFlagButton->setPreferredSize(Size(m_visibleSize.width / 3.7, m_visibleSize.width / 10));
+	m_toggleRecordFlagButton->setPreferredSize(Size(m_visibleSize.width / 3.7, m_topMenuHeight));
 	m_toggleRecordFlagButton->addTargetWithActionForControlEvents(this, cccontrol_selector(CalcHistoryScene::onToggleRecordFlagButtonCallback), Control::EventType::TOUCH_DOWN);
 	m_toggleRecordFlagButton->setAnchorPoint(Vec2::ANCHOR_TOP_RIGHT);
-	m_toggleRecordFlagButton->setPosition(Vec2(m_visibleOrigin.x + m_visibleSize.width - m_visibleSize.width / 15 - m_deleteAllButton->getContentSize().width,
-		m_visibleOrigin.y + m_visibleSize.height - m_visibleSize.width / 30));
-	label->setPosition(m_toggleRecordFlagButton->getContentSize().width / 2.18, m_toggleRecordFlagButton->getContentSize().height / 2.15);
+	m_toggleRecordFlagButton->setPosition(Vec2(m_visibleOrigin.x + m_visibleSize.width - m_deleteAllButton->getContentSize().width,
+		m_visibleOrigin.y + m_visibleSize.height));
+	label->setPosition(m_toggleRecordFlagButton->getContentSize().width / 2, m_toggleRecordFlagButton->getContentSize().height / 2);
 	label->setName("buttonName");
 	m_toggleRecordFlagButton->addChild(label);
+
+	Sprite* recordEnableMark;
+	if (UserDefault::getInstance()->getBoolForKey(RECORD_HISTORY_FLAG) == true) {
+		recordEnableMark = Sprite::create(GREEN_DOT_ICO);
+	}
+	else {
+		recordEnableMark = Sprite::create(RED_DOT_ICO);
+	}
+
+	recordEnableMark->setScale(m_toggleRecordFlagButton->getPreferredSize().width / 3, m_toggleRecordFlagButton->getPreferredSize().width / 20);
+	recordEnableMark->setAnchorPoint(Vec2::ANCHOR_MIDDLE_BOTTOM);
+	recordEnableMark->setPosition(m_toggleRecordFlagButton->getPreferredSize().width / 2, m_toggleRecordFlagButton->getPreferredSize().width / 16);
+	recordEnableMark->setName("recordEnableMark");
+	m_toggleRecordFlagButton->addChild(recordEnableMark);
+
 	addChild(m_toggleRecordFlagButton, 2);
 }
 
@@ -164,6 +184,12 @@ void CalcHistoryScene::calcLineHeight() {
 
 void CalcHistoryScene::onBackButtonCallback(Ref* pSender, Control::EventType event)
 {
+	m_backButton->stopAllActions();
+	FadeTo* fadeto1 = FadeTo::create(0.04f, 100);
+	FadeTo* fadeto2 = FadeTo::create(0.3f, 255);
+	Action * action = Sequence::create(fadeto1, fadeto2, NULL);
+	m_backButton->runAction(action);
+
 	Director::getInstance()->popSceneWithTransition<TransitionFadeTR>(0.6f);
 	//Director::getInstance()->popScene();
 	FuncUtil::printMem();
@@ -171,21 +197,36 @@ void CalcHistoryScene::onBackButtonCallback(Ref* pSender, Control::EventType eve
 
 void CalcHistoryScene::onToggleRecordFlagButtonCallback(Ref* pSender, Control::EventType event)
 {
+	m_toggleRecordFlagButton->stopAllActions();
+	FadeTo* fadeto1 = FadeTo::create(0.04f, 100);
+	FadeTo* fadeto2 = FadeTo::create(0.3f, 255);
+	Action * action = Sequence::create(fadeto1, fadeto2, NULL);
+	m_toggleRecordFlagButton->runAction(action);
+
 	Label* label = (Label*)m_toggleRecordFlagButton->getChildByName("buttonName");;
+	Sprite* oldRecordEnableMark = (Sprite*)m_toggleRecordFlagButton->getChildByName("recordEnableMark");
+	m_toggleRecordFlagButton->removeChild(oldRecordEnableMark);
+
+	Sprite* newRecordEnableMark;
 	if (UserDefault::getInstance()->getBoolForKey(RECORD_HISTORY_FLAG) == true) {
 		UserDefault::getInstance()->setBoolForKey(RECORD_HISTORY_FLAG, false);
 		label->setString(FuncUtil::getLang("openRecordFlag"));
-		//log("close");
-	}
-	else {
+		newRecordEnableMark = Sprite::create(RED_DOT_ICO);
+	}else {
 		UserDefault::getInstance()->setBoolForKey(RECORD_HISTORY_FLAG, true);
 		label->setString(FuncUtil::getLang("closeRecordFlag"));
-		//log("open");
+		newRecordEnableMark = Sprite::create(GREEN_DOT_ICO);
 	}
+	newRecordEnableMark->setScale(m_toggleRecordFlagButton->getPreferredSize().width / 3, m_toggleRecordFlagButton->getPreferredSize().width / 20);
+	newRecordEnableMark->setAnchorPoint(Vec2::ANCHOR_MIDDLE_BOTTOM);
+	newRecordEnableMark->setPosition(m_toggleRecordFlagButton->getPreferredSize().width / 2, m_toggleRecordFlagButton->getPreferredSize().width / 16);
+	newRecordEnableMark->setName("recordEnableMark");
+	m_toggleRecordFlagButton->addChild(newRecordEnableMark);
 }
 
 void CalcHistoryScene::onDeleteAllButtonCallback(Ref* pSender, Control::EventType event)
 {
+	m_deleteAllButton->stopAllActions();
 	CocosDialog* popup = CocosDialog::create(DIALOG_BG);
 	popup->setTitle(FuncUtil::getLang("alert").c_str());
 	popup->setContentText(FuncUtil::getLang("deleteConfirm").c_str());
@@ -392,12 +433,12 @@ void CalcHistoryScene::tableCellTouched(TableView* table, TableViewCell* cell)
 void  CalcHistoryScene::deleteAllButtonPopCallback(Node* pNode) {
 	if (pNode->getTag() == 0) {
 		if (CalcHistoryDB::deleteAll()) {
-			CocosToast::createToast(this, FuncUtil::getLang("deleteComplete"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2));
+			CocosToast::createToast(this, FuncUtil::getLang("deleteComplete"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2), TOAST_SUCCESS_COLOR);
 			m_historyData = CalcHistoryDB::getFullData();
 			m_tableView->reloadData();
 		}
 		else {
-			CocosToast::createToast(this, FuncUtil::getLang("deleteFailed"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2));
+			CocosToast::createToast(this, FuncUtil::getLang("deleteFailed"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2), TOAST_FAIL_COLOR);
 		}
 		pNode->removeFromParent();
 	}else if (pNode->getTag() == 1) {
@@ -410,11 +451,11 @@ void  CalcHistoryScene::deleteSingleButtonPopCallback(Node* pNode) {
 	if (pNode->getTag() == 0) {
 		ssize_t selectIdx = getSelectedCellIdx();
 		if (selectIdx == 0) {
-			CocosToast::createToast(this, FuncUtil::getLang("notChosen"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2));
+			CocosToast::createToast(this, FuncUtil::getLang("notChosen"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2), TOAST_FAIL_COLOR);
 		}else {
 			long dbId = m_historyData.at(selectIdx - 1)["id"]._longData;
 			if (CalcHistoryDB::deleteById(dbId)) {
-				CocosToast::createToast(this, FuncUtil::getLang("deleteComplete"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2));
+				CocosToast::createToast(this, FuncUtil::getLang("deleteComplete"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2), TOAST_SUCCESS_COLOR);
 				m_historyData = CalcHistoryDB::getFullData();
 				calcLineHeight();
 				recordCellSelected(0, false);
@@ -422,7 +463,7 @@ void  CalcHistoryScene::deleteSingleButtonPopCallback(Node* pNode) {
 				m_tableView->reloadData();
 				m_tableView->setContentOffset(m_tableOffset);
 			}else {
-				CocosToast::createToast(this, FuncUtil::getLang("deleteFailed"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2));
+				CocosToast::createToast(this, FuncUtil::getLang("deleteFailed"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2), TOAST_FAIL_COLOR);
 			}
 		}
 		pNode->removeFromParent();
