@@ -37,7 +37,7 @@ out/
 cocos2d/*
 proj*/*
 !proj.android/jni/
-
+!proj.android/res/
 
 # backup files
 *.bak
