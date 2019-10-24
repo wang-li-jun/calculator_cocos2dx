@@ -42,6 +42,7 @@ private:
 
 	float m_topMenuHeight;
 
+	string m_oldDescription;
 	TableView* m_tableView;
 	ControlButton* m_backButton;
 	float m_labelHeight[10] = { 0.0f };

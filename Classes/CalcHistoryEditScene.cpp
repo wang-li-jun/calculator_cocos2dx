@@ -147,6 +147,7 @@ TableViewCell* CalcHistoryEditScene::tableCellAtIndex(TableView* table, ssize_t 
 		descriptionEditBox->setAnchorPoint(Vec2::ANCHOR_MIDDLE_RIGHT);
 		descriptionEditBox->setPosition(Vec2(m_visibleSize.width * 0.97, m_labelHeight[idx] / 2));
 		descriptionEditBox->setFontColor(Color3B::BLACK); 
+		m_oldDescription = m_queryData["description"]._textData;
 		descriptionEditBox->setText(m_queryData["description"]._textData.c_str()); 
 		descriptionEditBox->setMaxLength(8);
 		descriptionEditBox->setInputMode(ui::EditBox::InputMode::SINGLE_LINE);//可以输入任何，但是不包括换行 
@@ -198,12 +199,17 @@ void CalcHistoryEditScene::editBoxEditingDidEnd(ui::EditBox *editBox)
 void CalcHistoryEditScene::editBoxReturn(ui::EditBox *editBox)
 {
 	string value = editBox->getText();
-	if (CalcHistoryDB::updateDescriptionById(getDbId(), value)) {
-		CocosToast::createToast(this, FuncUtil::getLang("updateComplete"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2), TOAST_SUCCESS_COLOR);
-	}else{
-		CocosToast::createToast(this, FuncUtil::getLang("updateFailed"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2), TOAST_FAIL_COLOR);
+	if (value != m_oldDescription) {
+		if (CalcHistoryDB::updateDescriptionById(getDbId(), value)) {
+			m_oldDescription = value;
+			CocosToast::createToast(this, FuncUtil::getLang("updateComplete"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2), TOAST_SUCCESS_COLOR);
+		}
+		else {
+			CocosToast::createToast(this, FuncUtil::getLang("updateFailed"), 2, Vec2(m_visibleOrigin.x + m_visibleSize.width / 2, m_visibleOrigin.y + m_visibleSize.height / 2), TOAST_FAIL_COLOR);
+		}
 	}
 }
+
 void CalcHistoryEditScene::editBoxTextChanged(ui::EditBox *editBox, const std::string &text)
 {
 
